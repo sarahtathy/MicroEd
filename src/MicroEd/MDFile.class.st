@@ -25,7 +25,6 @@ MDFile >> addMetaDataElements [
 
 	| root |
 	root := MicrodownParser parse: fileReference contents.
-
 	root hasMetaDataElement
 		ifFalse: [
 			root := MicrodownParser parse: '{
@@ -53,10 +52,12 @@ MDFile >> basename [
 		nameOfFileReferenceBeforeSaved := 'Untitled'.
 		^ 'Untitled' ].
 	
+	" check if the basename is on the iso. If not, add the date to have the iso"
 	nameOfFileReferenceBeforeSaved := fileReference basename.
 	dateCreationOfFileReference := DateAndTime now asDate yyyymmdd.
-	(fileReference basename includesSubstring:
-		 dateCreationOfFileReference) ifFalse: [
+	(fileReference basename matchesRegex:
+		 '(19|20)\d\d[-/.]?(0[1-9]|1[0-2])[-/.]?(0[1-9]|[12][0-9]|3[01])_.*\.md')
+		ifFalse: [
 		^ dateCreationOfFileReference , '_' , fileReference basename ].
 	^ fileReference basename
 ]
@@ -124,10 +125,14 @@ MDFile >> initializeWithFileReference: aFileReference [
 
 { #category : 'accessing' }
 MDFile >> save: aString [
-
-	fileReference asFileReference writeStreamDo: [ :str | 
-		str
-			nextPutAll: aString ].
+	
+	| fileStream | 
+	self addMetaDataElements. 
+	fileReference asFileReference writeStreamDo: [ :stream | stream flush. 
+		stream  nextPutAll: fileReference contents;
+		nextPutAll: String crlf; 
+	nextPutAll: aString. ] .
+		
 	
 		
 

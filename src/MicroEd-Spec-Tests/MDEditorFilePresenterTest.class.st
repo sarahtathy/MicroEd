@@ -101,7 +101,7 @@ MDEditorFilePresenterTest >> testSaveWithExtension [
 	presenter saveFile.
 
 	self assert: mdFile extension equals: 'md'.
-	self assert: mdFile contents equals: text.
+	self assert: (mdFile contents includesSubstring: text).
 	
 ]
 
